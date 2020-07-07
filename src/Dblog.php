@@ -6,6 +6,8 @@ namespace think\log\driver;
 
 use think\App;
 use think\contract\LogHandlerInterface;
+use think\facade\Db;
+use app\models\system\Runlog;
 
 class Dblog implements LogHandlerInterface {
 
@@ -21,15 +23,29 @@ class Dblog implements LogHandlerInterface {
         $this->app = $app;
 
         if (!empty($config)) {
-            $this->config = array_merge($this->config, $config);
+            //$this->config = array_merge($this->config, $config);
         }
     }
 
-    public function save(array $log): bool {        
+    public function save(array $log): bool {
+        $data = [];
+        foreach ($log as $type => $logs) {
+            foreach ($logs as $val) {
+                $data[] = [
+                    'uri' => request()->baseUrl(),
+                    'ip' => request()->ip(),
+                    'message' => $val,
+                    'level' => $type,
+                ];
+            }
+        }
+        $logModel = new Runlog;
+        $logModel->saveAll($data);
+        return true;
     }
-    
-    protected function write(array $message): bool
-    {
+
+    protected function write(array $message): bool {
+        
     }
 
 }
